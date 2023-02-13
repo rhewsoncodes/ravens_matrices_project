@@ -5,21 +5,65 @@ import math
 class Agent:
 
     def __init__(self):
-        pass
+        self.questionNumber = 1
 
-    def simplifyMatrix(self, myImage, height, width):
+    def getMatrix(self, myImage):
         image = Image.open(myImage)
         imageNP = np.array(image)
-        dimensions = imageNP.shape
-        imageMatrix = np.zeros((height, width))
-        for i in range(height):
-            heightStart = int(dimensions[0]/height * i)
-            heightEnd = int(heightStart + dimensions[0]/height)
-            for x in range(width):
-                widthStart = int(dimensions[1]/width * i)
-                widthEnd = int(widthStart + dimensions[1]/width)
-                imageMatrix[i][x] = np.mean(imageNP[heightStart:heightEnd, widthStart:widthEnd])
-        return imageMatrix
+
+        return imageNP
+
+    def twoDifferential(self, question):
+        imageMatrices = {}
+        for key in question.keys():
+            imageMatrices[key] = self.getMatrix(question[key].visualFilename)
+        hDiff = (imageMatrices["A"] - imageMatrices["B"])
+        vDiff = (imageMatrices["A"] - imageMatrices["C"])
+        return vDiff, hDiff
+
+    def twoVertical(self, question, vDiff):
+        vFrame = self.getMatrix(question["B"].visualFilename)
+        return vFrame + vDiff
+
+    def twoHorizontal(self, question, hDiff):
+        hFrame = self.getMatrix(question["C"].visualFilename)
+        return hFrame + hDiff
+
+    def twoBoth(self, question, vDiff, hDiff):
+        vhFrame = self.getMatrix(question["A"].visualFilename)
+        return vhFrame + vDiff + hDiff
+
+    def twoFlipVertical(self, question):
+        vFrame = self.getMatrix(question["B"].visualFilename)
+        return np.flipud(vFrame)
+
+    def twoFlipHorizontal(self, question):
+        hFrame = self.getMatrix(question["C"].visualFilename)
+        return np.fliplr(hFrame)
+        
+    def solveTwo(self, problem):
+        question, answer = self.splitQuestionAnswer(problem)
+        vDiff, hDiff = self.twoDifferential(question)
+        answers = []
+        for option in answer.keys():
+            methodGuesses = []
+            optionFrame = self.getMatrix(answer[option].visualFilename)
+            methodGuesses.append(self.twoVertical(question, vDiff))
+            methodGuesses.append(self.twoHorizontal(question, hDiff))
+            methodGuesses.append(self.twoBoth(question, vDiff, hDiff))
+            methodScores = [np.sum(np.absolute(optionFrame - guess)) for guess in methodGuesses]
+            answers.append(min(methodScores))
+        self.questionNumber += 1
+        return np.argmin(answers) + 1
+
+
+
+            
+
+    def solveThree(self, problem):
+        return 1
+
+
         
     
     
@@ -36,4 +80,8 @@ class Agent:
         return question, answer
     
     def Solve(self, problem):
-        pass
+        figures = problem.figures
+        if "D" in figures.keys():
+            return self.solveThree(figures)
+        else:
+            return self.solveTwo(figures)
