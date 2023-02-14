@@ -5,7 +5,7 @@ import math
 class Agent:
 
     def __init__(self):
-        self.questionNumber = 1
+        self.questionNumber = 0
 
     def getMatrix(self, myImage):
         image = Image.open(myImage)
@@ -33,16 +33,34 @@ class Agent:
         vhFrame = self.getMatrix(question["A"].visualFilename)
         return vhFrame + vDiff + hDiff
 
-    def twoFlipVertical(self, question):
-        vFrame = self.getMatrix(question["B"].visualFilename)
-        return np.flipud(vFrame)
+    def isVerticalFlip(self, question):
+        aFrame = self.getMatrix(question["A"].visualFilename)
+        cFrame = self.getMatrix(question["C"].visualFilename)
+        aFlipped = np.flipud(aFrame)
+        h = np.mean(np.absolute(aFlipped - cFrame))
+        if h < 1:
+            return np.flipud(self.getMatrix(question["B"].visualFilename))
+        return None
 
-    def twoFlipHorizontal(self, question):
-        hFrame = self.getMatrix(question["C"].visualFilename)
-        return np.fliplr(hFrame)
-        
-    def solveTwo(self, problem):
-        question, answer = self.splitQuestionAnswer(problem)
+    def isHorizontalFlip(self, question):
+        aFrame = self.getMatrix(question["A"].visualFilename)
+        bFrame = self.getMatrix(question["B"].visualFilename)
+        aFlipped = np.fliplr(aFrame)
+        h = np.mean(np.absolute(aFlipped - bFrame))
+        if h < 1:
+            return np.fliplr(self.getMatrix(question["C"].visualFilename))
+        return None
+    
+    def isRotateHorizontal(self, question):
+        aFrame = self.getMatrix(question["A"].visualFilename)
+        bFrame = self.getMatrix(question["B"].visualFilename)
+        aRotated = np.rot90(aFrame, 1)
+        h = np.mean(np.absolute(aRotated - bFrame))
+        if h < 1:
+            return np.rot90(self.getMatrix(question["C"].visualFilename))
+        return None
+
+    def catchAll(self, question, answer):
         vDiff, hDiff = self.twoDifferential(question)
         answers = []
         for option in answer.keys():
@@ -53,8 +71,36 @@ class Agent:
             methodGuesses.append(self.twoBoth(question, vDiff, hDiff))
             methodScores = [np.sum(np.absolute(optionFrame - guess)) for guess in methodGuesses]
             answers.append(min(methodScores))
-        self.questionNumber += 1
+
         return np.argmin(answers) + 1
+
+    def returnClosestAnswer(self, frame, answer):
+        answerArrays = {}
+        for option in answer.keys():
+            answerArrays[option] = self.getMatrix(answer[option].visualFilename)
+        return np.argmin([np.sum(np.absolute(frame-answerArrays[option])) for option in answer.keys()]) + 1
+
+        
+    def solveTwo(self, problem):
+        question, answer = self.splitQuestionAnswer(problem)
+        vFlipGuess = self.isVerticalFlip(question)
+        hFlipGuess = self.isHorizontalFlip(question)
+        rotateGuess = self.isRotateHorizontal(question)
+
+        if np.any(vFlipGuess):
+            print(self.questionNumber, "V FLIP") 
+            return self.returnClosestAnswer(vFlipGuess, answer)
+        if np.any(hFlipGuess):
+            print(self.questionNumber, "H FLIP") 
+            return self.returnClosestAnswer(hFlipGuess, answer)
+        if np.any(rotateGuess):
+            print(self.questionNumber, "ROTATE")
+            return self.returnClosestAnswer(rotateGuess, answer)
+
+        return self.catchAll(question, answer)
+        
+        
+
 
 
 
@@ -82,6 +128,8 @@ class Agent:
     def Solve(self, problem):
         figures = problem.figures
         if "D" in figures.keys():
+            self.questionNumber += 1
             return self.solveThree(figures)
         else:
+            self.questionNumber += 1
             return self.solveTwo(figures)
