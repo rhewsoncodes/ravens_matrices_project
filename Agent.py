@@ -13,7 +13,7 @@ class Agent:
         figures = problem.figures
         if "D" in figures.keys():
             self.questionNumber += 1
+            print(self.questionNumber)
             return solveThree(figures)
         else:
-            self.questionNumber += 1
             return solveTwo(figures)
