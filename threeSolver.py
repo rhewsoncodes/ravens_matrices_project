@@ -20,10 +20,19 @@ def columnIdentity(question):
     return None
 
 def catchAll(question, answer):
-    aFrame = getMatrix(question["A"].visualFilename)
-    eFrame = getMatrix(question["E"].visualFilename)
-    diff = np.sum(eFrame) - np.sum(aFrame)
-    predictedSum = np.sum(eFrame) + diff
+    aFrame = int(np.sum(getMatrix(question["A"].visualFilename)))
+    bFrame = int(np.sum(getMatrix(question["B"].visualFilename)))
+    dFrame = int(np.sum(getMatrix(question["D"].visualFilename)))
+    eFrame = int(np.sum(getMatrix(question["E"].visualFilename)))
+    fFrame = int(np.sum(getMatrix(question["F"].visualFilename)))
+    hFrame = int(np.sum(getMatrix(question["H"].visualFilename)))
+    diff = eFrame - aFrame
+    abDiff = bFrame - aFrame
+    adDiff = dFrame - aFrame
+    efDiff = fFrame - eFrame
+    ehDiff = hFrame - eFrame
+    ratio = np.abs(diff)/(np.abs(abDiff)+np.abs(adDiff))
+    predictedSum = eFrame + (efDiff + ehDiff)*ratio
     answerScores = [np.absolute(np.sum(getMatrix(answer[option].visualFilename)) - predictedSum) for option in answer.keys()]
     return np.argmin(answerScores) + 1
 
