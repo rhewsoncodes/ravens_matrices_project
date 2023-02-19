@@ -38,10 +38,12 @@ def returnShapes(matrix):
     shapes = []
 
     def bfs(r,c):
+        rSum = 0
+        cSum = 0
         q = collections.deque()
         visit.add((r, c))
         q.append((r,c))
-        sizeCount = 0
+        sizeCount = 1
         while q:
             row, col = q.popleft()
             directions = [[1,0], [-1, 0], [0, 1], [0, -1]]
@@ -51,11 +53,13 @@ def returnShapes(matrix):
                    c in range(cols) and
                    m[r][c] == 0 and
                    (r, c) not in visit):
+                   rSum += r
+                   cSum += c
                    sizeCount += 1
                    q.append((r,c))
                    visit.add((r,c))
         
-        return sizeCount
+        return (sizeCount, rSum/sizeCount, cSum/sizeCount)
                    
                 
 

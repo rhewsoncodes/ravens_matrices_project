@@ -7,12 +7,12 @@ import math
 class Agent:
 
     def __init__(self):
-        self.questionNumber = 0            
+        pass        
 
     def Solve(self, problem):
         figures = problem.figures
         if "D" in figures.keys():
-            self.questionNumber += 1
-            return solveThree(figures, self.questionNumber)
+            print(problem.name)
+            return solveThree(figures)
         else:
             return solveTwo(figures)

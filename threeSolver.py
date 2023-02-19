@@ -58,7 +58,7 @@ def sudokuSum(question, answer):
     return None
 
 
-def switcharoo(question, questionNumber): #work in progress
+def switcharoo(question): #work in progress
     aFrame = getMatrix(question["A"].visualFilename)
     cFrame = getMatrix(question["C"].visualFilename)
 
@@ -73,20 +73,46 @@ def switcharoo(question, questionNumber): #work in progress
         return np.column_stack((part2g, part1g))
     return None
 
+def rotate(question, answer):
+    aFrame = getMatrix(question["A"].visualFilename)
+    cFrame = getMatrix(question["C"].visualFilename)
+
+    aShape = returnShapes(aFrame)
+    cShape = returnShapes(cFrame)
+
+    if len(aShape) != len(cShape) or len(aShape) != 1:
+        return None
+
+    if len(aShape) != len(cShape) or len(aShape) != 1:
+        return None
+
+    for i in range(1,4):
+        testFrame = np.rot90(aFrame, i)
+        testShape = returnShapes(testFrame)
+        print(cShape, testShape)
+
+
+    return None
+
+
+
     
 
-def solveThree(problem, questionNumber):
+def solveThree(problem):
     question, answer = splitQuestionAnswer(problem)
     isRowIdentity = rowIdentity(question)
     isColumnIdentity = columnIdentity(question)
     isSudokuSum = sudokuSum(question, answer)
-    isSwitcharoo = switcharoo(question, questionNumber)
+    isSwitcharoo = switcharoo(question)
+    isRotate = rotate(question, answer)
     if np.any(isRowIdentity):
         return returnClosestAnswer(isRowIdentity, answer)
     if np.any(isColumnIdentity):
         return returnClosestAnswer(isColumnIdentity, answer)
     if isSudokuSum:
         return isSudokuSum
+    if isRotate:
+        return isRotate
     
 
 
